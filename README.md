@@ -8,7 +8,7 @@
 
 ## Screenshot
 
-![5G Fault Triage Agent Screenshot](./public/screenshot.png)
+![5G Fault Triage Agent Screenshot](./screenshot.png)
 
 ---
 
