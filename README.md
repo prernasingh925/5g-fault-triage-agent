@@ -8,7 +8,7 @@
 
 ## Screenshot
 
-![5G Fault Triage Agent](https://5g-fault-triage-agent.vercel.app/og-image.png)
+![5G Fault Triage Agent Screenshot](public/screenshot.png)
 
 
 
