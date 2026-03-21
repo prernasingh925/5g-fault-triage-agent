@@ -8,9 +8,7 @@
 
 ## Screenshot
 
-![5G Fault Triage Agent Screenshot](./screenshot.png)
-
-> *Add a screenshot of the app here.*
+![5G Fault Triage Agent Screenshot](./public/screenshot.png)
 
 ---
 
