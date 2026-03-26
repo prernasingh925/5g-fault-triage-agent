@@ -68,6 +68,11 @@ const IconWarning = () => (
     <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
   </svg>
 )
+const IconMenu = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20">
+    <path d="M4 6h16M4 12h16M4 18h16" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+)
 
 // ─── Mock data ───────────────────────────────────────────────
 const SAMPLE_TICKET = `INCIDENT TICKET: INC-20260321-0847
@@ -127,7 +132,7 @@ const HISTORY_ITEMS = [
 ]
 
 // ─── Sidebar ──────────────────────────────────────────────────
-function Sidebar({ activePage, onNavigate, expanded, onToggle }) {
+function Sidebar({ activePage, onNavigate, expanded, onToggle, mobileOpen, onMobileClose }) {
   const navItems = [
     { id: 'home',    label: 'Home',           icon: <IconHome /> },
     { id: 'analyse', label: 'Analyse Fault',  icon: <IconSearch /> },
@@ -136,7 +141,7 @@ function Sidebar({ activePage, onNavigate, expanded, onToggle }) {
   ]
 
   return (
-    <nav className={`sidebar ${expanded ? 'expanded' : 'collapsed'}`}>
+    <nav className={`sidebar ${expanded ? 'expanded' : 'collapsed'} ${mobileOpen ? 'mobile-open' : ''}`}>
       <div className="sidebar-header">
         <div className="sidebar-logo">
           <IconSignal />
@@ -516,9 +521,12 @@ const PAGE_TITLES = {
   settings: 'Settings',
 }
 
-function TopBar({ page }) {
+function TopBar({ page, onMenuClick }) {
   return (
     <header className="topbar">
+      <button className="mobile-menu-btn" onClick={onMenuClick}>
+        <IconMenu />
+      </button>
       <span className="topbar-title">5G Fault Triage Agent</span>
       <span className="badge badge-uap">
         <span className="badge-dot" />
@@ -538,27 +546,36 @@ function TopBar({ page }) {
 export default function App() {
   const [page, setPage] = useState('home')
   const [sidebarExpanded, setSidebarExpanded] = useState(true)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  const handleNavigate = (p) => {
+    setPage(p)
+    setMobileMenuOpen(false)
+  }
 
   const renderPage = () => {
     switch (page) {
-      case 'home':     return <HomePage onNavigate={setPage} />
+      case 'home':     return <HomePage onNavigate={handleNavigate} />
       case 'analyse':  return <AnalysePage />
       case 'history':  return <HistoryPage />
       case 'settings': return <SettingsPage />
-      default:         return <HomePage onNavigate={setPage} />
+      default:         return <HomePage onNavigate={handleNavigate} />
     }
   }
 
   return (
     <div className="app-layout">
+      {mobileMenuOpen && <div className="mobile-overlay" onClick={() => setMobileMenuOpen(false)} />}
       <Sidebar
         activePage={page}
-        onNavigate={setPage}
+        onNavigate={handleNavigate}
         expanded={sidebarExpanded}
         onToggle={() => setSidebarExpanded(e => !e)}
+        mobileOpen={mobileMenuOpen}
+        onMobileClose={() => setMobileMenuOpen(false)}
       />
       <div className="main-wrapper">
-        <TopBar page={page} />
+        <TopBar page={page} onMenuClick={() => setMobileMenuOpen(true)} />
         <main className="page-content">
           {renderPage()}
         </main>
