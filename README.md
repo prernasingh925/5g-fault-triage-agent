@@ -1,84 +1,162 @@
 # 5G Fault Triage Agent — UAP Intelligence Layer
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-5g--fault--triage--agent.vercel.app-blue?style=for-the-badge&logo=vercel)](https://5g-fault-triage-agent.vercel.app)
+> **AI-powered NOC operations tool that classifies 5G network faults into structured, actionable triage in under 10 seconds.**
 
-> AI-powered 5G network fault classification for NOC and Field Operations.
+🔗 **[Live Demo](https://5g-fault-triage-agent.vercel.app)** &nbsp;|&nbsp; Built by [Prerna Singh](https://linkedin.com/in/prernasingh925) — Product Manager, AI & Enterprise Platforms
 
 ---
 
-## Screenshot
+## The Problem
 
-![5G Fault Triage Agent Screenshot](public/screenshot.png)
+When a 5G fault occurs, a NOC (Network Operations Centre) engineer receives a raw alarm with minimal context. They must manually determine severity, identify the fault type, assess subscriber impact, decide resolution steps, and route escalation — often during a high-pressure P1 incident with an SLA clock running.
 
-
+This manual process is slow, inconsistent across engineers, and error-prone. **This agent eliminates that diagnostic lag.**
 
 ---
 
 ## What It Does
 
-The 5G Fault Triage Agent takes a raw fault description as input and returns a structured triage report across **9 intelligence fields** — giving NOC engineers and field teams instant clarity on what's wrong, how bad it is, and what to do next.
+Paste a raw 5G fault description. The agent returns a structured triage across 9 dimensions in under 10 seconds:
 
-| Field | Description |
+| Output Field | What It Tells You |
 |---|---|
-| **Severity** | Priority rating from P1 (Critical) to P4 (Low) |
-| **Fault Type** | Categorized fault classification (e.g., RAN Degradation, Core Outage) |
-| **5G Layer** | Which layer of the 5G stack is affected (RAN, Transport, Core, Slice) |
-| **Impacted Service** | The specific service or network segment affected |
-| **Subscriber Impact** | Estimated number of subscribers affected and nature of degradation |
-| **Root Cause Hypothesis** | AI-generated hypothesis based on fault symptoms and patterns |
-| **Resolution Playbook** | Step-by-step remediation actions for the field team |
-| **Escalation Path** | Who to escalate to and when, based on severity and domain |
-| **SLA Breach Risk** | Whether the fault is at risk of breaching service-level agreements |
+| **Severity** | P1 Critical / P2 High / P3 Medium / P4 Low |
+| **Fault Type** | gNB Radio / Core Network / Backhaul / Transport / Config |
+| **5G Layer** | RAN / Core / Transport / Slice |
+| **Impacted Service** | eMBB / URLLC / mMTC |
+| **Subscriber Impact** | Estimated affected users |
+| **Root Cause Hypothesis** | AI's probabilistic best guess with confidence signal |
+| **Resolution Playbook** | Numbered, field-actionable steps |
+| **Escalation Path** | Who to call and when |
+| **SLA Breach Risk** | Yes/No with reasoning |
 
 ---
 
-## Built With
+## Product Architecture
 
-- **React** — Component-based UI
-- **Vite** — Fast build tooling and local development
-- **CSS** — Custom styling for a clean, NOC-grade interface
-- **AI-assisted development** — Claude (Anthropic) used for rapid prototyping and logic scaffolding
+A 5-screen enterprise SaaS web application built for daily NOC operations use:
 
----
-
-## Product Thinking
-
-This is a working prototype of **JioBrain** — the AI assurance platform being built at Jio Platforms.
-
-JioBrain is designed to bring intelligent fault triage, predictive alerting, and automated resolution workflows into Jio's Network Operations Centers. Today, NOC engineers manually parse alarm logs, cross-reference runbooks, and escalate through voice calls — a process that is slow, inconsistent, and doesn't scale with 5G complexity.
-
-This prototype demonstrates what the first interaction layer of JioBrain looks like: a fault description goes in, and structured, actionable intelligence comes out. The goal is to reduce mean-time-to-resolve (MTTR) by surfacing the right context to the right person at the right time.
+```
+Home (Dashboard)  →  Live KPIs: MTTR, accuracy rate, active P1s, resolved incidents
+Analyse           →  Fault input with sample fault loader
+Results           →  Full 9-field triage output with colour-coded severity
+History           →  Past triage log with severity filtering
+Settings          →  AI model config, escalation preferences, telemetry
+```
 
 ---
 
-## About the PM
+## Tech Stack
 
-Built by **Prerna Singh**, Product Manager at Jio Platforms.
-
-Prerna works at the intersection of telecom infrastructure and AI, focused on building intelligent tools for network assurance, operations automation, and field productivity.
-
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-prernasingh925-0077B5?style=flat&logo=linkedin)](https://linkedin.com/in/prernasingh925)
-
----
-
-## Live Demo
-
-[https://5g-fault-triage-agent.vercel.app](https://5g-fault-triage-agent.vercel.app)
+| Layer | Technology | Why |
+|---|---|---|
+| Frontend | React 19 + Vite | Enterprise SaaS quality bar. Sub-second dev iterations. |
+| Styling | CSS (mobile-responsive) | Collapsible sidebar + touch layout for field engineers on phones |
+| AI Engine | Google Gemini API | Free tier sufficient for prototype. Structured JSON output. |
+| Deployment | Vercel | Zero-config CI/CD. Environment variable security for API keys. |
+| Version Control | GitHub | Public repo — full commit history visible |
 
 ---
 
-## Run Locally
+## Why This Is a PM Project, Not a Dev Project
+
+I wrote zero lines of code. This was built using **AI-assisted development (vibe coding)** — I specified, the AI built.
+
+My work was:
+
+**Prompt Engineering (6 iterations)**
+
+| Version | Problem Found | Fix Applied |
+|---|---|---|
+| v1 | Output was prose, hard to parse | Mandated JSON structured output |
+| v2 | Severity inconsistent across inputs | Added severity decision matrix |
+| v3 | Non-5G terms in output | Added 5G vocabulary constraint list |
+| v4 | Resolution steps were generic | Added field-actionable requirement |
+| v5 | SLA field always returned Yes | Added reasoning requirement |
+| v6 | Final — all fields consistent | Prompt finalised |
+
+**Product Decisions**
+- Why 9 output fields and not 5 or 12
+- Why include Root Cause Hypothesis with confidence (builds trust, not just output)
+- Why React over Streamlit (mobile responsiveness requirement)
+- Why mobile-responsive web over native app (80% of value at 20% of cost for a prototype)
+- Why Gemini free tier over OpenAI (zero cost validation, acceptable quality for classification)
+
+**QA & Measurement**
+
+Ran 10 structured test scenarios across fault types and severity levels:
+
+| Metric | Target | Result |
+|---|---|---|
+| Classification accuracy | >85% | ~80% clean inputs / ~60% multi-fault inputs |
+| Output completeness | 9/9 fields | 9/9 on all 10 runs ✅ |
+| Response time | <10 seconds | Avg 4.2 seconds ✅ |
+| Domain relevance | 5G terms used correctly | 9/10 runs ✅ |
+
+> **Key learning:** The accuracy gap on multi-fault inputs became the top v2 priority. Without measuring, I would have prioritised incorrectly.
+
+---
+
+## Connection to JioBrain
+
+This is not just a portfolio project. It is a working proof of concept for the AI intelligence layer I am designing at Jio Platforms — specifically for the **Unified Assurance Platform (UAP)** and **JioBrain**, an AI product for 5G network operations.
+
+| This Prototype | JioBrain at Jio Scale |
+|---|---|
+| AI classifies fault from free-text input | ML models classify alarms from live OSS/BSS streams |
+| 9-field structured triage output | Structured ticket enrichment in UAP |
+| Resolution playbook | Automated work order generation for field teams |
+| SLA breach risk flag | Real-time SLA monitoring + proactive escalation |
+| Single fault, manual trigger | Hundreds of concurrent alarms, automated |
+
+---
+
+## Roadmap
+
+**Shipped (v1.0 → v1.1)**
+- ✅ Core AI triage — 9-field structured output
+- ✅ React 19 + Vite (upgraded from Streamlit prototype)
+- ✅ 5-screen enterprise UI
+- ✅ Mobile-responsive design (collapsible sidebar, touch layout)
+- ✅ Incident history with severity filtering
+
+**Next (v2.0)**
+- 🔲 Multi-fault correlation — auto-elevate severity when multiple fault signatures detected
+- 🔲 Live Gemini API integration replacing mock dashboard data
+- 🔲 Confidence scoring per field
+- 🔲 PWA / offline mode for field engineers in low-connectivity zones
+
+---
+
+## Running Locally
 
 ```bash
-# Clone the repository
-git clone <repo-url>
-cd TelecomAgent
-
-# Install dependencies
+git clone https://github.com/prernasingh925/5g-fault-triage-agent
+cd 5g-fault-triage-agent
 npm install
+```
 
-# Start the development server
+Create a `.env` file in the root:
+```
+VITE_GEMINI_API_KEY=your_api_key_here
+```
+
+```bash
 npm run dev
 ```
 
-The app will be available at `http://localhost:5173`.
+Open `http://localhost:5173`
+
+> Get a free Gemini API key at [aistudio.google.com](https://aistudio.google.com)
+
+---
+
+## About
+
+Built by **Prerna Singh** — Product Manager specialising in AI and Enterprise Platforms.
+
+- 🔗 [LinkedIn](https://linkedin.com/in/prernasingh925)
+- 📧 prerna.singh1990@yahoo.in
+- 💻 [GitHub](https://github.com/prernasingh925)
+
+*This project is a portfolio demonstration of AI product management — from problem definition and PRD through prompt engineering, build, measurement, and iteration.*
