@@ -1,4 +1,4 @@
-# 5G Fault Triage Agent — UAP Intelligence Layer
+# 5G Fault Triage Agent — Telecom Intelligence Layer
 
 > **AI-powered NOC operations tool that classifies 5G network faults into structured, actionable triage in under 10 seconds.**
 
@@ -97,14 +97,16 @@ Ran 10 structured test scenarios across fault types and severity levels:
 
 ---
 
-## Connection to JioBrain
+## Real-World Context
 
-This is not just a portfolio project. It is a working proof of concept for the AI intelligence layer I am designing at Jio Platforms — specifically for the **Unified Assurance Platform (UAP)** and **JioBrain**, an AI product for 5G network operations.
+This is not a theoretical exercise. India's leading telecom operators are actively deploying 5G infrastructure at scale — thousands of gNBs going live across urban and rural zones simultaneously. NOC teams are handling alarm volumes that manual triage processes were never designed for.
 
-| This Prototype | JioBrain at Jio Scale |
+This agent is a proof of concept for the kind of AI intelligence layer that modern telecom NOC operations need: fast, structured, consistent classification that reduces mean time to resolution and frees engineers to focus on remediation rather than diagnosis.
+
+| This Prototype | Enterprise NOC at Scale |
 |---|---|
 | AI classifies fault from free-text input | ML models classify alarms from live OSS/BSS streams |
-| 9-field structured triage output | Structured ticket enrichment in UAP |
+| 9-field structured triage output | Structured ticket enrichment in assurance platforms |
 | Resolution playbook | Automated work order generation for field teams |
 | SLA breach risk flag | Real-time SLA monitoring + proactive escalation |
 | Single fault, manual trigger | Hundreds of concurrent alarms, automated |
@@ -115,14 +117,14 @@ This is not just a portfolio project. It is a working proof of concept for the A
 
 **Shipped (v1.0 → v1.1)**
 - ✅ Core AI triage — 9-field structured output
-- ✅ React 19 + Vite (upgraded from Streamlit prototype)
-- ✅ 5-screen enterprise UI
+- ✅ React 19 + Vite enterprise UI
+- ✅ 5-screen enterprise SaaS layout
 - ✅ Mobile-responsive design (collapsible sidebar, touch layout)
 - ✅ Incident history with severity filtering
 
 **Next (v2.0)**
 - 🔲 Multi-fault correlation — auto-elevate severity when multiple fault signatures detected
-- 🔲 Live Gemini API integration replacing mock dashboard data
+- 🔲 Live API integration replacing mock dashboard data
 - 🔲 Confidence scoring per field
 - 🔲 PWA / offline mode for field engineers in low-connectivity zones
 
