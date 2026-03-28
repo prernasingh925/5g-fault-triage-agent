@@ -377,7 +377,7 @@ function ResultsPanel({ result }) {
         <div className={`p1-badge ${result.severityLevel === 'P1' ? '' : 'p1-badge-low'}`}>{result.severityLevel || 'P1'} {result.severity?.split(' ')[1] || 'CRITICAL'}</div>
         <div className="p1-text">
           <strong>{result.severity || 'P1 Critical'} — {result.severityLevel === 'P1' ? 'Immediate Action Required' : result.severityLevel === 'P2' ? 'High Priority Response' : 'Standard Response'}</strong>
-          <span>{result.faultType} · {result.layer5g}</span>
+          <span style={{ fontSize: 12, opacity: 0.85 }}>{result.faultType}</span>
         </div>
         <div className="p1-meta">
           <div style={{ fontWeight: 700, color: result.slaRisk?.startsWith('Yes') ? 'var(--red)' : 'var(--primary)', fontSize: 13 }}>{result.slaRisk?.startsWith('Yes') ? 'SLA BREACH RISK' : 'WITHIN SLA'}</div>
@@ -581,7 +581,7 @@ function SettingsPage() {
         </div>
         <div className="settings-row">
           <div>
-            <div className="settings-row-label">UAP Intelligence Layer</div>
+            <div className="settings-row-label">AI Triage Engine</div>
           </div>
           <div style={{ fontSize: 13, color: 'var(--primary)', fontWeight: 600 }}>Active</div>
         </div>
@@ -607,7 +607,7 @@ function TopBar({ onMenuClick }) {
       <span className="topbar-title">5G Fault Triage Agent</span>
       <span className="badge badge-uap">
         <span className="badge-dot" />
-        UAP Intelligence Layer
+        AI Triage Engine
       </span>
       <div className="topbar-right">
         <div className="status-indicator">
