@@ -132,7 +132,7 @@ const HISTORY_ITEMS = [
 ]
 
 // ─── Sidebar ──────────────────────────────────────────────────
-function Sidebar({ activePage, onNavigate, expanded, onToggle, mobileOpen, onMobileClose }) {
+function Sidebar({ activePage, onNavigate, expanded, onToggle, mobileOpen }) {
   const navItems = [
     { id: 'home',    label: 'Home',           icon: <IconHome /> },
     { id: 'analyse', label: 'Analyse Fault',  icon: <IconSearch /> },
@@ -252,6 +252,7 @@ function AnalysePage() {
     if (!text.trim()) return
     setLoading(true)
     setResult(null)
+<<<<<<< HEAD
 
     const systemPrompt = `You are an expert 5G network engineer and NOC analyst. Analyze the following 5G fault description and return a structured triage in strict JSON format only — no markdown, no extra text.
 
@@ -332,6 +333,66 @@ Rules:
       alert(e.message || 'Something went wrong. Please try again.')
     } finally {
       setLoading(false)
+=======
+    
+    try {
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      if (!apiKey) {
+        throw new Error("API key not found. Please ensure VITE_GEMINI_API_KEY is set in .env");
+      }
+
+      const prompt = `You are a 5G Fault Triage AI Agent. Analyze the following incident ticket or fault description and provide a realistic, professional diagnostic result.
+Return the result EXACTLY as a JSON object with these keys:
+- faultType (string, e.g. "Radio Link Failure (RLF)")
+- faultTypeSub (string)
+- layer5g (string)
+- layerSub (string)
+- impactedService (string)
+- impactedSub (string)
+- subscriberImpact (string)
+- subImpactSub (string)
+- slaRisk (string)
+- slaRiskSub (string)
+- escalationSteps (array of up to 4 strings)
+- hypothesis (string, explaining the root cause in detail, around 3-4 sentences)
+- confidence (number, 0-100)
+- playbook (array of objects, each with "step" (string) and "detail" (string))
+
+Make sure the data reflects a realistic telco scenario.
+
+Ticket:
+${text}`;
+
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: 0.2,
+            responseMimeType: "application/json"
+          }
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error?.message || "Failed to analyze fault from API");
+      }
+
+      const data = await response.json();
+      const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      
+      if (!textResponse) throw new Error("Invalid response format from API");
+      
+      const parsedResult = JSON.parse(textResponse);
+      setResult(parsedResult);
+    } catch (err) {
+      console.error(err);
+      alert("Error analyzing fault: " + err.message);
+    } finally {
+      setLoading(false);
+>>>>>>> 23278c679b395e0c665adf1c0b7ce04f0028f9b7
     }
   }
 
@@ -598,7 +659,7 @@ const PAGE_TITLES = {
   settings: 'Settings',
 }
 
-function TopBar({ page, onMenuClick }) {
+function TopBar({ onMenuClick }) {
   return (
     <header className="topbar">
       <button className="mobile-menu-btn" onClick={onMenuClick}>
@@ -652,7 +713,7 @@ export default function App() {
         onMobileClose={() => setMobileMenuOpen(false)}
       />
       <div className="main-wrapper">
-        <TopBar page={page} onMenuClick={() => setMobileMenuOpen(true)} />
+        <TopBar onMenuClick={() => setMobileMenuOpen(true)} />
         <main className="page-content">
           {renderPage()}
         </main>
