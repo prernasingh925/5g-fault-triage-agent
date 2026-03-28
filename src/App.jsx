@@ -248,14 +248,91 @@ function AnalysePage() {
 
   const loadSample = () => setText(SAMPLE_TICKET)
 
-  const handleAnalyse = () => {
+  const handleAnalyse = async () => {
     if (!text.trim()) return
     setLoading(true)
     setResult(null)
-    setTimeout(() => {
+
+    const systemPrompt = `You are an expert 5G network engineer and NOC analyst. Analyze the following 5G fault description and return a structured triage in strict JSON format only — no markdown, no extra text.
+
+Fault description:
+${text}
+
+Return this exact JSON structure:
+{
+  "severity": "P1 Critical",
+  "severityLevel": "P1",
+  "faultType": "short fault type name",
+  "faultTypeSub": "one-line description of fault type",
+  "layer5g": "5G layer affected (e.g. PHY / L1, RRC, PDCP, Core, Transport)",
+  "layerSub": "brief explanation of layer impact",
+  "impactedService": "e.g. VoNR + eMBB Data",
+  "impactedSub": "explanation of impacted service",
+  "subscriberImpact": "estimated number of affected users or sessions",
+  "subImpactSub": "percentage of capacity or context",
+  "slaRisk": "Yes — high breach probability" or "No — within SLA window",
+  "slaRiskSub": "brief reasoning for SLA assessment",
+  "escalationSteps": ["L1 NOC", "L2 RF Engineer", "L3 RAN Core Team", "Vendor TAC"],
+  "hypothesis": "detailed root cause hypothesis paragraph explaining what is likely causing this fault and why, referencing specific values from the input",
+  "confidence": 85,
+  "playbook": [
+    { "step": "Action name", "detail": "Specific field-actionable instruction" },
+    { "step": "Action name", "detail": "Specific field-actionable instruction" },
+    { "step": "Action name", "detail": "Specific field-actionable instruction" },
+    { "step": "Action name", "detail": "Specific field-actionable instruction" },
+    { "step": "Action name", "detail": "Specific field-actionable instruction" }
+  ]
+}
+
+Rules:
+- severity must be one of: P1 Critical, P2 High, P3 Medium, P4 Low
+- severityLevel must be one of: P1, P2, P3, P4
+- Use 5G-specific terminology (gNB, NR, RLF, SINR, PDSCH, PRACH, HO, VoNR, eMBB, URLLC, mMTC, RAN, Core, NSA, SA)
+- playbook steps must be specific and field-actionable, not generic
+- hypothesis must reference specific metrics or values from the input
+- confidence should be 0-100 based on clarity of evidence in the input
+- If input is not a 5G fault description, return: { "error": "Please enter a valid 5G fault description" }`
+
+    const payload = {
+      contents: [{ parts: [{ text: systemPrompt }] }],
+      generationConfig: { responseMimeType: 'application/json' }
+    }
+
+    try {
+      const res = await fetch('/api/gemini', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+
+      const data = await res.json()
+
+      if (!res.ok || data.error) {
+        if (res.status === 429 || data.error?.code === 429) {
+          throw new Error('High demand right now — please retry in a few seconds.')
+        }
+        throw new Error(data.error?.message || data.error || 'API request failed.')
+      }
+
+      const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text
+      if (!textResponse) throw new Error('Please enter a valid 5G fault description.')
+
+      let cleanText = textResponse.replace(/^```json/im, '').replace(/```$/im, '').trim()
+      let parsed
+      try {
+        parsed = JSON.parse(cleanText)
+        if (parsed.error) throw new Error(parsed.error)
+        if (!parsed.faultType || !parsed.hypothesis || !parsed.playbook) throw new Error('Schema failure')
+      } catch (err) {
+        throw new Error('Please enter a valid 5G fault description.')
+      }
+
+      setResult(parsed)
+    } catch (e) {
+      alert(e.message || 'Something went wrong. Please try again.')
+    } finally {
       setLoading(false)
-      setResult(MOCK_RESULT)
-    }, 1800)
+    }
   }
 
   return (
@@ -295,16 +372,16 @@ function AnalysePage() {
 function ResultsPanel({ result }) {
   return (
     <div className="results-section">
-      {/* P1 Severity Banner */}
+      {/* Severity Banner */}
       <div className="p1-banner">
-        <div className="p1-badge">P1 CRITICAL</div>
+        <div className={`p1-badge ${result.severityLevel === 'P1' ? '' : 'p1-badge-low'}`}>{result.severityLevel || 'P1'} {result.severity?.split(' ')[1] || 'CRITICAL'}</div>
         <div className="p1-text">
-          <strong>CRITICAL SEVERITY — Immediate Action Required</strong>
-          <span>gNB-MUM-347 · Sector 2 · Mumbai Central · NR n78 (3.5 GHz)</span>
+          <strong>{result.severity || 'P1 Critical'} — {result.severityLevel === 'P1' ? 'Immediate Action Required' : result.severityLevel === 'P2' ? 'High Priority Response' : 'Standard Response'}</strong>
+          <span>{result.faultType} · {result.layer5g}</span>
         </div>
         <div className="p1-meta">
-          <div style={{ fontWeight: 700, color: 'var(--red)', fontSize: 13 }}>SLA BREACH</div>
-          <div>23 min remaining</div>
+          <div style={{ fontWeight: 700, color: result.slaRisk?.startsWith('Yes') ? 'var(--red)' : 'var(--primary)', fontSize: 13 }}>{result.slaRisk?.startsWith('Yes') ? 'SLA BREACH RISK' : 'WITHIN SLA'}</div>
+          <div>{result.slaRiskSub}</div>
         </div>
       </div>
 
